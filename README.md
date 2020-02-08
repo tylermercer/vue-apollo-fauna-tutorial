@@ -314,4 +314,84 @@ If you run the app now, you should see a list of notes. (Note that we're using e
 
 To create notes, we'll use an ApolloMutation component.
 
-TODO
+Create a new file in the `components` directory called `NoteCreator.vue`. Put the following code into that file:
+
+```
+<template>
+  <ApolloMutation
+    :mutation="gql => gql(query)"
+    :variables="{ author, body }"
+    @done="onDone">
+    <template v-slot="{ mutate, loading, error }">
+      <h4>Add Note:</h4>
+      <div>
+        <label for="body">Contents:</label>
+        <input id="body" type="text" :disabled="loading" v-model="body"/>
+      </div>
+      <div>
+        <label for="author">Name:</label>
+        <input id="author" type="text" :disabled="loading" v-model="author"/>
+      </div>
+      <button :disabled="loading || !isSubmittable" @click="mutate">Save</button>
+      <p class="error" v-if="error">{{error}}</p>
+      <p v-if="loading">Saving...<p>
+      <p class="success" v-if="showSuccess">Note saved!</p>
+    </template>
+  </ApolloMutation>
+</template>
+
+<script lang="ts">
+import { Component, Prop, Vue } from 'vue-property-decorator'
+import ApolloMutation from 'vue-apollo'
+
+@Component
+export default class NoteCreator extends Vue {
+  author: string = ""
+  body: string = ""
+
+  showSuccess: boolean = false
+
+  get isSubmittable () {
+    return !!this.author && !!this.body;
+  }
+
+  query: string = `
+    mutation AddNote ($author: String!, $body: String!) {
+      createNote(data: {
+        author: $author,
+        body: $body
+      }) {
+        _id
+      }
+    }
+  `
+
+  onDone() {
+    this.showSuccess = true
+    this.author = ""
+    this.body = ""
+    setTimeout(() => {
+      this.showSuccess = false
+    }, 2000);
+  }
+}
+</script>
+
+<style lang="css">
+.error {
+  color: red;
+}
+.success {
+  color: #008800;
+}
+</style>
+```
+As can be seen, the ApolloMutation component exposes a slot where we can build our form and run the mutation. When the button is clicked, we run the mutation by calling the `mutate` slot prop. When the query is running, we disable the button and input fields via the `loading` slot prop. We disable the button when one or both of the fields is empty via the computed member `isSubmittable`. Finally, when the query finishes successfully, we clear the fields and briefly show the success message by means of a `setTimeout`.
+
+An important thing that should be noted here is that you can't use an arrow function as a class member if you want to access `this` within the function. As explained in [the `vue-class-component` docs](https://github.com/vuejs/vue-class-component#this-value-in-property), `this` is not bound to the Vue instance in an arrow function. This is why we use `onDone() {...` instead of `onDone = () => {...`.
+
+If you run the app, submit a note, and increase the page size, you should see your newly-created note. But why does it not show up before you increase the page size? Our ApolloClient doesn't know to update its cache when we post the mutation! Hence it only updates when it is required to re-request the list of notes from the server. This is less than ideal.
+
+To fix this, we need to use the `ApolloMutation`'s `updateCache` prop.
+
+_TODO: Add and explain cache-updating code_

@@ -1,6 +1,7 @@
 <template>
   <div class="app">
     <h1>Notes</h1>
+    <NoteCreator/>
     <div>
       <button @click="incrementPageSize">Show More</button>
       <span class="num-shown">Max number of notes shown: {{pageSize}}</span>
@@ -13,10 +14,11 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import NotesList from './components/NotesList.vue'
+import NoteCreator from './components/NoteCreator.vue'
 
 @Component({
   components: {
-    NotesList
+    NotesList, NoteCreator
   }
 })
 export default class App extends Vue {
