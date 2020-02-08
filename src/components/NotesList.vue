@@ -29,7 +29,7 @@ import Note from './Note.vue'
     Note
   }
 })
-export default class HelloWorld extends Vue {
+export default class NotesList extends Vue {
   @Prop(Number) private pageSize!: string;
 
   query: string = `

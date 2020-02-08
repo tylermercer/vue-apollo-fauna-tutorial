@@ -149,7 +149,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import ApolloQuery from 'vue-apollo'
 
 @Component
-export default class HelloWorld extends Vue {
+export default class NotesList extends Vue {
   @Prop(Number) private pageSize!: string;
 
   query: string = `
@@ -257,7 +257,7 @@ First, however, we need to build our Note component. Put the following code in `
 import { Component, Prop, Vue } from 'vue-property-decorator'
 
 @Component
-export default class HelloWorld extends Vue {
+export default class Note extends Vue {
   @Prop(String) private body!: string;
   @Prop(String) private author!: string;
 }
@@ -285,7 +285,7 @@ export default class HelloWorld extends Vue {
 </style>
 ```
 
-This is just a simple component that takes the body and author as a prop and renders them as a nice yellow sticky note.
+This is just a simple component that takes the body and author as props and renders them as a nice yellow sticky note.
 
 Now go to `NotesList.vue` and replace the `{{JSON.stringify}}` line with the following:
 ```
@@ -304,7 +304,7 @@ import Note from './Note.vue'
     Note
   }
 })
-export default class HelloWorld extends Vue {
+export default class NotesList extends Vue {
 ...
 ```
 

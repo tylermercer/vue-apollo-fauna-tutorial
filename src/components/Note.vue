@@ -9,7 +9,7 @@
 import { Component, Prop, Vue } from 'vue-property-decorator'
 
 @Component
-export default class HelloWorld extends Vue {
+export default class Note extends Vue {
   @Prop(String) private body!: string;
   @Prop(String) private author!: string;
 }
