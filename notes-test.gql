@@ -1,0 +1,8 @@
+type Note @collection(name: "notes") {
+  body: String!
+  author: String!
+}
+
+type Query {
+  allNotes: [Note]
+}
