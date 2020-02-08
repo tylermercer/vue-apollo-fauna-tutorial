@@ -308,7 +308,7 @@ export default class NotesList extends Vue {
 ...
 ```
 
-If you run the app now, you should see a list of notes. (Note that we're using each note's id as its `key`. This is so that Vue has a unique id for each node in that v-for list.) It also displays the number of notes.
+If you run the app now, you should see a list of notes. (Note that we're using each note's id as its `key`. This is so that Vue has a unique key for each node in that v-for list.) It also displays the number of notes.
 
 ## Add Functionality for Creating Notes
 
