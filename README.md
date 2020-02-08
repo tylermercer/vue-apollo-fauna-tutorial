@@ -19,7 +19,7 @@ This is because Fauna does a lot to flesh out the schema for us. If you click th
 You can use the GraphQL playground to explore the functionality of this auto-embellished schema. Try adding a few notes; this will increase your familiarity with GraphQL and provide data for us to view in the app later.
 
 ## Create a Database Key for Your Client
-We'll  use the Fauna shell to create the key, but before we do that we need to create a custom role. This is because the [existing roles](https://docs.fauna.com/fauna/current/security/) won't work for our purposes. `server` and `admin` roles are much too powerful to embed in a client (since the user would have access to it), `server-readonly` won't allow us to create notes, and `client` can only access resources "that are specifically marked with the `public` permission." (Thus, it may actually be possible to use a `client` key for our purposes, but I was unable to figure out how to mark my schema as public.)
+We'll  use the Fauna shell to create the key, but before we do that we need to create a custom role. This is because the [existing roles](https://docs.fauna.com/fauna/current/security/) won't work for our purposes. `server` and `admin` roles are much too powerful to embed in a client (a malicious user could wreak havoc on our database), `server-readonly` won't allow us to create notes, and `client` can only access resources "that are specifically marked with the `public` permission." (Thus, it may actually be possible to use a `client` key for our purposes, but I was unable to figure out how to mark my schema as public.)
 
 To create the custom role, go to the Security section of your console and click "Manage Roles" and then "New Role". Name your role something sensible (I named mine `vue-client`) and grant it permissions to create, update, and delete notes as well as to get the list of all notes, as shown in the screenshot below.
 
@@ -34,7 +34,7 @@ fauna shell notes-test
 Now run the following command to create your key:
 ```
 CreateKey({
-  role: 'vue-client'
+  role: Role('vue-client')
 })
 ```
 **Important:** The secret that is displayed in your console after you run this command is **only ever displayed once**, so copy it to your text editor for safekeeping. If you lose the secret, you'll have to create a new key.
