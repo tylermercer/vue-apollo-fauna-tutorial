@@ -25,27 +25,20 @@
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import ApolloMutation from 'vue-apollo'
 
+import { CreateNoteQuery } from '../queries'
+
 @Component
 export default class NoteCreator extends Vue {
   author: string = ""
   body: string = ""
 
   get isSubmittable () {
-    return !!this.author && !!this.body;
+    return !!this.author && !!this.body
   }
 
   showSuccess: boolean = false
 
-  query: string = `
-    mutation AddNote ($author: String!, $body: String!) {
-      createNote(data: {
-        author: $author,
-        body: $body
-      }) {
-        _id
-      }
-    }
-  `
+  query: string = CreateNoteQuery
 
   onDone() {
     this.showSuccess = true

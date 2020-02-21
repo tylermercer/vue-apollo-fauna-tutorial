@@ -23,6 +23,7 @@
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import ApolloQuery from 'vue-apollo'
 import Note from './Note.vue'
+import { GetNotesQuery } from '../queries'
 
 @Component({
   components: {
@@ -32,16 +33,6 @@ import Note from './Note.vue'
 export default class NotesList extends Vue {
   @Prop(Number) private pageSize!: string;
 
-  query: string = `
-    query MyQuery ($pageSize: Int) {
-      allNotes(_size: $pageSize) {
-        data {
-          _id
-          author
-          body
-        }
-      }
-    }
-  `
+  query: string = GetNotesQuery
 }
 </script>
