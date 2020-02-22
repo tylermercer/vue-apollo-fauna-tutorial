@@ -12,14 +12,14 @@
         type="text" 
         placeholder="Contents" 
         :disabled="loading" 
-        v-model="newBody"
+        v-model="body"
       />
       <input 
         id="author" 
         type="text" 
         placeholder="Author" 
         :disabled="loading" 
-        v-model="newAuthor"
+        v-model="author"
       />
       <button :disabled="loading || !isSubmittable" @click="mutate">Save</button>
       <p class="error" v-if="error">{{error}}</p>
