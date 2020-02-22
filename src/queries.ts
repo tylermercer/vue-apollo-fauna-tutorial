@@ -33,3 +33,19 @@ export const DeleteNoteQuery: DocumentNode = gql`
         }
     }
 `
+
+export const UpdateNoteQuery: DocumentNode = gql`
+    mutation UpdateNote ($id:ID!, $body:String!, $author:String!){
+        updateNote(
+            id: $id
+            data: { 
+                author: $author,
+                body: $body
+            }
+        ) {
+            _id
+            author
+            body
+        }
+    }
+`

@@ -1,27 +1,46 @@
 <template>
   <div class="post">
-    <DeleteNoteButton 
-      class="delete-button" 
-      :id="id"
-    />
-    <p class="body">{{body}}</p>
-    <p class="author">~ {{author}}</p>
+    <template v-if="!editing">
+      <div class="menu-buttons">
+        <DeleteNoteButton 
+          :id="id"
+        />
+        <button class="menu-button" @click="() => editing = true">Edit</button>
+      </div>
+      <p class="body">{{body}}</p>
+      <p class="author">~ {{author}}</p>
+    </template>
+    <template v-else>
+      <div class="menu-buttons">
+        <button class="menu-button" @click="() => editing = false">Cancel</button>
+      </div>
+      <NoteEditor
+        :id="id"
+        :body="body"
+        :author="author"
+        @saved="() => editing = false"
+      />
+    </template>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import DeleteNoteButton from './DeleteNoteButton.vue'
+import NoteEditor from './NoteEditor.vue'
 
 @Component({
   components: {
-    DeleteNoteButton
+    DeleteNoteButton,
+    NoteEditor
   }
 })
 export default class Note extends Vue {
   @Prop(String) private body!: string;
   @Prop(String) private author!: string;
   @Prop(String) private id!: string;
+
+  editing: boolean = false
 }
 </script>
 
@@ -45,13 +64,20 @@ export default class Note extends Vue {
   text-align: right;
   font-size: 14px;
 }
-.delete-button {
+.menu-buttons {
   visibility: hidden;
 	position: absolute;
 	top: 0;
 	right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
-.post:hover .delete-button {
+.post:hover .menu-buttons {
   visibility: visible;
+}
+.menu-button {
+  border: unset;
+  background: unset;
 }
 </style>
