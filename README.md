@@ -125,7 +125,7 @@ The NotesList component will be where the magic happens. The Note component will
 In `NotesList.vue`, paste the following code:
 ```
 <template>
-  <ApolloQuery :query="gql => gql(query)" :variables="{ pageSize }">
+  <ApolloQuery :query="gql => gql(query)">
     <template v-slot="{ result: { error, data }, isLoading }">
       <!-- Loading -->
       <div v-if="isLoading">Loading...</div>
@@ -150,11 +150,9 @@ import ApolloQuery from 'vue-apollo'
 
 @Component
 export default class NotesList extends Vue {
-  @Prop(Number) private pageSize!: string;
-
   query: string = `
-    query MyQuery ($pageSize: Int) {
-      allNotes(_size: $pageSize) {
+    query MyQuery {
+      allNotes {
         data {
           _id
           author
@@ -169,20 +167,17 @@ export default class NotesList extends Vue {
 
 A brief explanation as to how this component works:
 
-It receives the page size (the number of items to request) as a prop. In the template, it creates an ApolloQuery component. That component runs the query (which is stored as a string that's a data member of the NotesList class). If the result contains data, it displays it (as a string for now--we'll extract the actual data and render a list of notes later).
+In the template, it creates an ApolloQuery component. That component runs the query (which is stored as a string that's a data member of the NotesList class). If the result contains data, it displays it (as a string for now--we'll extract the actual data and render a list of notes later).
 
 Now we need to actually use the NotesList component in our app. Open up `App.vue` and replace it with the following:
 
 ```
 <template>
   <div class="app">
-    <h1>Notes</h1>
-    <div>
-      <button @click="incrementPageSize">Show More</button>
-      <span class="num-shown">Max number of notes shown: {{pageSize}}</span>
-      <button :disabled="pageSize <= 1" @click="decrementPageSize">Show Less</button>
+    <div class="header>
+      <h1>Notes</h1>
     </div>
-    <NotesList :pageSize="pageSize"/>
+    <NotesList/>
   </div>
 </template>
 
@@ -195,31 +190,28 @@ import NotesList from './components/NotesList.vue'
     NotesList
   }
 })
-export default class App extends Vue {
-  pageSize = 1
-
-  incrementPageSize() {
-    this.pageSize += 1
-  }
-
-  decrementPageSize() {
-    if (this.pageSize > 1) this.pageSize -= 1
-  }
-}
+export default class App extends Vue {}
 </script>
 
 <style lang="css">
-.num-shown {
-  padding: 0 10px;
+.header {
+  position: sticky;
+  top: 0;
+  background: white;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.3);
+  padding: 6px;
 }
 .app {
   font-family: sans-serif;
   text-align: center;
 }
+body {
+  margin: 0
+}
 </style>
 ```
 
-This App component is pretty straightforward. It contains a data member to track the current page size, buttons that increment and decrement that value, and a NotesList to which that value is passed as a prop. It also contains some minimal styling. (Note, however, that UX design is not the focus of this tutorial. 😅)
+This App component is pretty straightforward. It contains the NotesList component, as well as a sticky header (where we'll later add a component for creating notes). It also contains some minimal styling. (Note, however, that UX design is not the focus of this tutorial. 😅)
 
 If you run the app now (using `npm run serve`), you should see your data (as JSON) below the two buttons! It doesn't look pretty, but it's from the database! Yay!
 
@@ -227,7 +219,7 @@ If you run the app now (using `npm run serve`), you should see your data (as JSO
 
 As you can see from the JSON that's currently displayed in your app, the response from Fauna has the following structure:
 ```
-data: {
+{
   allNotes: {
     data: [
       {
@@ -392,6 +384,49 @@ As a side note, it should be noted here that you can't use an arrow function as 
 
 If you run the app, submit a note, and increase the page size, you should see your newly-created note. But why does it not show up before you increase the page size? Our ApolloClient doesn't know to update its cache when we post the mutation! Hence it only updates when it is required to re-request the list of notes from the server. This is less than ideal.
 
-To fix this, we need to use the `ApolloMutation`'s `updateCache` prop.
+**Important note:**
+As explained [here](https://www.apollographql.com/docs/angular/features/cache-updates/#normalization-with-dataidfromobject), Apollo _does_ in fact update the cache automatically, but only in some cases--specifically, cases where already-known objects with an `_id` or `id` field are mutated. Since we're creating a new object here instead of mutating one, we have to update the cache manually. 
 
-_TODO: Add and explain cache-updating code_
+## Updating the Apollo Cache
+
+To update the cache, we can use the `ApolloMutation`'s `updateCache` prop.
+
+Before we dive into the code, we need to understand how Apollo's cache works. As is explained in [the Apollo Angular docs](https://www.apollographql.com/docs/angular/features/cache-updates/), Apollo stores each query with the data associated with it. Thus, to update the list of notes, we'll need to find the query in the store, modify the data, and rewrite that data into the store. But... how do we look up the query?
+
+Apollo stores the query-data pairs as DocumentNode objects mapped to their data. This is the purpose of the `gql` function that is passed to the Apollo components' `query` parameter--it converts the query string to a DocumentNode. Since we'll need to access those DocumentNode objects from multiple places, we'll extract our queries out to a single TypeScript file and import the queries (as DocumentNodes) into the places we'll need them.
+
+Create a file in the `src` folder called `queries.ts`, and add the following contents:
+
+```
+import { DocumentNode } from 'graphql'
+import gql from 'graphql-tag'
+
+export const CreateNoteQuery: DocumentNode = gql`
+    mutation AddNote ($author: String!, $body: String!) {
+        createNote (data: {
+            author: $author,
+            body: $body
+        }) {
+            _id
+            author
+            body
+        }
+    }
+`
+
+export const GetNotesQuery: DocumentNode = gql`
+    query MyQuery {
+        allNotes {
+            data {
+            _id
+            author
+            body
+            }
+        }
+    }
+`
+```
+
+Here you can see the previously-mentioned `gql` function in action. (For more information on template string tag functions, check out [the MDN docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)).
+
+Because the queries are exported as DocumentNodes, we don't need to process them with the gql functions in the components they're used in. Thus, we can go to the NotesList component and replace `gql => gql(query)` with `_ => query`. Then add an import statement to import the `GetNotesQuery`, and store it in the component's `query` data member.
