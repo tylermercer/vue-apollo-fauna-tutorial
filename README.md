@@ -354,6 +354,8 @@ export default class NoteCreator extends Vue {
         body: $body
       }) {
         _id
+        author
+        body
       }
     }
   `
@@ -393,7 +395,9 @@ To update the cache, we can use the `ApolloMutation`'s `updateCache` prop.
 
 Before we dive into the code, we need to understand how Apollo's cache works. As is explained in [the Apollo Angular docs](https://www.apollographql.com/docs/angular/features/cache-updates/), Apollo stores each query with the data associated with it. Thus, to update the list of notes, we'll need to find the query in the store, modify the data, and rewrite that data into the store. But... how do we look up the query?
 
-Apollo stores the query-data pairs as DocumentNode objects mapped to their data. This is the purpose of the `gql` function that is passed to the Apollo components' `query` parameter--it converts the query string to a DocumentNode. Since we'll need to access those DocumentNode objects from multiple places, we'll extract our queries out to a single TypeScript file and import the queries (as DocumentNodes) into the places we'll need them.
+Apollo stores the query-data pairs as DocumentNode objects mapped to their data. This is the purpose of the `gql` function that is passed to the Apollo components' `query` parameter--it converts the query string to a DocumentNode. 
+
+Since we'll need to access those DocumentNode objects from multiple places, we'll extract our queries out to a single TypeScript file and import the queries (as DocumentNodes) into the places we'll need them.
 
 Create a file in the `src` folder called `queries.ts`, and add the following contents:
 
@@ -429,4 +433,44 @@ export const GetNotesQuery: DocumentNode = gql`
 
 Here you can see the previously-mentioned `gql` function in action. (For more information on template string tag functions, check out [the MDN docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)).
 
-Because the queries are exported as DocumentNodes, we don't need to process them with the gql functions in the components they're used in. Thus, we can go to the NotesList component and replace `gql => gql(query)` with `_ => query`. Then add an import statement to import the `GetNotesQuery`, and store it in the component's `query` data member.
+Because the queries are exported as DocumentNodes, we don't need to process them with the gql functions in the components they're used in. Thus, we can go to the NotesList component and replace `gql => gql(query)` with `_ => query`. Then add an import statement to import the `GetNotesQuery`, and store it in the component's `query` data member:
+
+```
+import { GetNotesQuery } from '../queries'
+```
+
+Change the NoteCreator's `query` data member and ApolloMutation prop the same way. Make sure to import both the `GetNotesQuery` and the `AddNoteQuery` here--we'll need the `GetNotesQuery` in order to update the cache.
+
+```
+import { AddNoteQuery, GetNotesQuery } from '../queries'
+```
+
+Now for the fun part: updating the cache. Create a new member function in the NoteCreator:
+
+```
+updateCache(store: ApolloClient<any>, result: any) {
+    //Get the new note
+    const newNote = result.data.createNote;
+
+    //Get the object containing the cached results for GetNotesQuery
+    const data = store.readQuery({ query: GetNotesQuery });
+
+    //Modify the data to include the new note
+    data.allNotes.data = [ ...data.allNotes.data, newNote ];
+
+    //Write the data back into the store's cache
+    store.writeQuery({ query: GetNotesQuery, data });
+  }
+```
+
+There are a few important things to note here that aren't immediately obvious: 
+
+Firstly, `result.data` contains the data returned by the AddNoteQuery.
+
+Secondly, the `createNote` and `allNotes` members get their names from the query strings: `allNotes` is the object returned by the GetNotesQuery, and `createNote` is the mutation executed by the AddNoteQuery.
+
+Finally, note that `readQuery` reads from the local cache _only_--it does not make a network request.
+
+Run the app now and add a new note, and you should see it immediately appear in the list of notes!
+
+## Deleting Notes
