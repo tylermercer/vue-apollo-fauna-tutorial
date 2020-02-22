@@ -1,5 +1,7 @@
 # Building a Notes App with Vue, TypeScript, FaunaDB, and Apollo
 
+
+
 ## Create a FaunaDB Database.
 I called mine "notes-test." Once you've created the database, go to the GraphQL section and upload the notes-test.gql schema from this repo.
 
@@ -475,12 +477,113 @@ Run the app now and add a new note, and you should see it immediately appear in 
 
 ## Deleting Notes
 
-The next step is to add the ability to delete notes. Let's add a delete button to the Note component.
-
-Add the following line inside the "post" `div` in the Note component:
+The next step is to add the ability to delete notes. We'll need to use another ApolloMutation component for this. To keep our Note component tidy, we'll wrap the ApolloMutation in its own component. First, however, we need to add a mutation to our `queries.ts`:
 
 ```
-<button class="delete-button" @click="delete">X</button>
+export const DeleteNoteQuery: DocumentNode = gql`
+    mutation DeleteNote ($id: ID!) {
+        deleteNote (id: $id) {
+            _id
+        }
+    }
+`
 ```
 
-To style the button, add 
+This query takes the ID as a parameter, and returns it after executing the query. We'll use the returned ID when we update the cache.
+
+Now put the following code in a file called `DeleteNoteButton.vue`:
+
+```
+<template>
+  <ApolloMutation
+    :mutation="_ => deleteMutation"
+    :variables="{id}"
+    :update="updateCache"
+  >
+    <template v-slot="{ mutate, loading }">
+      <button class="button" @click="loading? () => {} : mutate()">
+        {{loading? "deleting..." : "X"}}
+      </button>
+    </template>
+  </ApolloMutation>
+</template>
+
+<script lang="ts">
+import { Component, Prop, Vue } from 'vue-property-decorator'
+import ApolloMutation from 'vue-apollo'
+import { DeleteNoteQuery, GetNotesQuery } from '../queries'
+import { DocumentNode } from 'graphql'
+import { DataStore } from 'apollo-client/data/store'
+import ApolloClient from 'apollo-client'
+
+@Component
+export default class DeleteNoteButton extends Vue {
+  @Prop(String) private id!: String;
+  
+  deleteMutation: DocumentNode = DeleteNoteQuery;
+
+  updateCache(store: ApolloClient<any>, result: any) {
+    const oldNote = result.data.deleteNote;
+    const data = store.readQuery({ query: GetNotesQuery });
+    data.allNotes.data = data.allNotes.data.filter((n: any) => n._id !== oldNote._id)
+    store.writeQuery({ query: GetNotesQuery, data });
+  }
+}
+</script>
+
+<style scoped>
+.button {
+	padding: 10px;
+	color: rgba(0,0,0,0.4);
+	margin: 0;
+	background: unset;
+	border: unset;
+	cursor: pointer;
+}
+</style>
+```
+
+This component works similarly to our NoteCreator component:
+- The ApolloMutation renders the button, which executes the mutation when clicked. 
+- While the mutation is being executed, the button is rendered with a no-op click listener (to prevent the user from clicking it again) and the text "deleting..."
+- After the mutation is executed, the `updateCache` method removes the deleted note from the list of notes using `Array.filter`.
+
+Now add an instance of that component to the Note component:
+
+```
+...
+  <div class="post">
+    <DeleteNoteButton 
+      class="delete-button" 
+      :id="id"
+    />
+    <p class="body">{{body}}</p>
+...
+import DeleteNoteButton from './DeleteNoteButton.vue'
+
+@Component({
+  components: {
+    DeleteNoteButton
+  }
+})
+export default class Note extends Vue {
+...
+.post {
+  ...
+  position: relative;
+}
+...
+.delete-button {
+  visibility: hidden;
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+.post:hover .delete-button {
+  visibility: visible;
+}
+```
+
+The styling we added puts the button in the top right corner of the note, and makes it only visible when the user hovers over the note.
+
+That's it! If you run the app, you should be able to delete notes!
