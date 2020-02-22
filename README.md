@@ -1,6 +1,6 @@
 # Building a Notes App with Vue, TypeScript, FaunaDB, and Apollo
 
-
+This is an attempt at a simple tutorial that explains how to use Apollo, Vue, and FaunaDB to create a small notes application. 
 
 ## Create a FaunaDB Database.
 I called mine "notes-test." Once you've created the database, go to the GraphQL section and upload the notes-test.gql schema from this repo.
