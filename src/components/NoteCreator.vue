@@ -63,7 +63,6 @@ export default class NoteCreator extends Vue {
 </script>
 
 <style lang="css">
-
 .error {
   color: red;
 }

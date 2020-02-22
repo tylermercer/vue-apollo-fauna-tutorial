@@ -17,7 +17,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import ApolloQuery from 'vue-apollo'
 import Note from './Note.vue'
 import { GetNotesQuery } from '../queries'
-import { DocumentNode } from 'graphql';
+import { DocumentNode } from 'graphql'
 
 @Component({
   components: {

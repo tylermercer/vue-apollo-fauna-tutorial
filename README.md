@@ -151,7 +151,7 @@ import ApolloQuery from 'vue-apollo'
 @Component
 export default class NotesList extends Vue {
   query: string = `
-    query MyQuery {
+    query GetNotes {
       allNotes {
         data {
           _id
@@ -302,7 +302,7 @@ export default class NotesList extends Vue {
 
 If you run the app now, you should see a list of notes. (Note that we're using each note's id as its `key`. This is so that Vue has a unique key for each node in that v-for list.) It also displays the number of notes.
 
-## Add Functionality for Creating Notes
+## Adding Notes
 
 To create notes, we'll use an ApolloMutation component.
 
@@ -348,7 +348,7 @@ export default class NoteCreator extends Vue {
   }
 
   query: string = `
-    mutation AddNote ($author: String!, $body: String!) {
+    mutation CreateNote ($author: String!, $body: String!) {
       createNote(data: {
         author: $author,
         body: $body
@@ -406,7 +406,7 @@ import { DocumentNode } from 'graphql'
 import gql from 'graphql-tag'
 
 export const CreateNoteQuery: DocumentNode = gql`
-    mutation AddNote ($author: String!, $body: String!) {
+    mutation CreateNote ($author: String!, $body: String!) {
         createNote (data: {
             author: $author,
             body: $body
@@ -419,7 +419,7 @@ export const CreateNoteQuery: DocumentNode = gql`
 `
 
 export const GetNotesQuery: DocumentNode = gql`
-    query MyQuery {
+    query GetNotes {
         allNotes {
             data {
             _id
@@ -439,10 +439,10 @@ Because the queries are exported as DocumentNodes, we don't need to process them
 import { GetNotesQuery } from '../queries'
 ```
 
-Change the NoteCreator's `query` data member and ApolloMutation prop the same way. Make sure to import both the `GetNotesQuery` and the `AddNoteQuery` here--we'll need the `GetNotesQuery` in order to update the cache.
+Change the NoteCreator's `query` data member and ApolloMutation prop the same way. Make sure to import both the `GetNotesQuery` and the `CreateNoteQuery` here--we'll need the `GetNotesQuery` in order to update the cache.
 
 ```
-import { AddNoteQuery, GetNotesQuery } from '../queries'
+import { CreateNoteQuery, GetNotesQuery } from '../queries'
 ```
 
 Now for the fun part: updating the cache. Create a new member function in the NoteCreator:
@@ -465,9 +465,9 @@ updateCache(store: ApolloClient<any>, result: any) {
 
 There are a few important things to note here that aren't immediately obvious: 
 
-Firstly, `result.data` contains the data returned by the AddNoteQuery.
+Firstly, `result.data` contains the data returned by the CreateNoteQuery.
 
-Secondly, the `createNote` and `allNotes` members get their names from the query strings: `allNotes` is the object returned by the GetNotesQuery, and `createNote` is the mutation executed by the AddNoteQuery.
+Secondly, the `createNote` and `allNotes` members get their names from the query strings: `allNotes` is the object returned by the GetNotesQuery, and `createNote` is the mutation executed by the CreateNoteQuery.
 
 Finally, note that `readQuery` reads from the local cache _only_--it does not make a network request.
 
