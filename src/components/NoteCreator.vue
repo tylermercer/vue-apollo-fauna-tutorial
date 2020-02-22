@@ -1,19 +1,26 @@
 <template>
   <ApolloMutation
+    class="creator"
     :mutation="() => query"
     :variables="{ author, body }"
     :update="updateCache"
     @done="onDone">
     <template v-slot="{ mutate, loading, error }">
       <h4>Add Note:</h4>
-      <div>
-        <label for="body">Contents:</label>
-        <input id="body" type="text"  :disabled="loading" v-model="body"/>
-      </div>
-      <div>
-        <label for="author">Name:</label>
-        <input id="author" type="text" :disabled="loading" v-model="author"/>
-      </div>
+      <input 
+        id="body" 
+        type="text" 
+        placeholder="Contents" 
+        :disabled="loading" 
+        v-model="newBody"
+      />
+      <input 
+        id="author" 
+        type="text" 
+        placeholder="Author" 
+        :disabled="loading" 
+        v-model="newAuthor"
+      />
       <button :disabled="loading || !isSubmittable" @click="mutate">Save</button>
       <p class="error" v-if="error">{{error}}</p>
       <p v-if="loading">Saving...<p>
@@ -62,11 +69,16 @@ export default class NoteCreator extends Vue {
 }
 </script>
 
-<style lang="css">
+<style lang="css" scoped>
 .error {
   color: red;
 }
 .success {
   color: #008800;
+}
+.creator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>
