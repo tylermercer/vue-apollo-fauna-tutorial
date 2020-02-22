@@ -25,3 +25,11 @@ export const GetNotesQuery: DocumentNode = gql`
         }
     }
 `
+
+export const DeleteNoteQuery: DocumentNode = gql`
+    mutation DeleteNote ($id: ID!) {
+        deleteNote (id: $id) {
+            _id
+        }
+    }
+`

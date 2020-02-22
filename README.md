@@ -474,3 +474,13 @@ Finally, note that `readQuery` reads from the local cache _only_--it does not ma
 Run the app now and add a new note, and you should see it immediately appear in the list of notes!
 
 ## Deleting Notes
+
+The next step is to add the ability to delete notes. Let's add a delete button to the Note component.
+
+Add the following line inside the "post" `div` in the Note component:
+
+```
+<button class="delete-button" @click="delete">X</button>
+```
+
+To style the button, add 
