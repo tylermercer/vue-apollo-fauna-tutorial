@@ -18,9 +18,7 @@ import NoteCreator from './components/NoteCreator.vue'
     NotesList, NoteCreator
   }
 })
-export default class App extends Vue {
-
-}
+export default class App extends Vue {}
 </script>
 
 <style lang="css">
