@@ -1,7 +1,8 @@
 <template>
   <ApolloMutation
-    :mutation="gql => gql(query)"
+    :mutation="() => query"
     :variables="{ author, body }"
+    :update="updateCache"
     @done="onDone">
     <template v-slot="{ mutate, loading, error }">
       <h4>Add Note:</h4>
@@ -25,7 +26,10 @@
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import ApolloMutation from 'vue-apollo'
 
-import { CreateNoteQuery } from '../queries'
+import { CreateNoteQuery, GetNotesQuery } from '../queries'
+import { DataStore } from 'apollo-client/data/store'
+import ApolloClient from 'apollo-client'
+import { DocumentNode } from 'graphql'
 
 @Component
 export default class NoteCreator extends Vue {
@@ -38,7 +42,7 @@ export default class NoteCreator extends Vue {
 
   showSuccess: boolean = false
 
-  query: string = CreateNoteQuery
+  query: DocumentNode = CreateNoteQuery
 
   onDone() {
     this.showSuccess = true
@@ -48,10 +52,18 @@ export default class NoteCreator extends Vue {
       this.showSuccess = false
     }, 2000);
   }
+
+  updateCache(store: ApolloClient<any>, result: any) {
+    const newNote = result.data.createNote;
+    const data = store.readQuery({ query: GetNotesQuery });
+    data.allNotes.data = [ ...data.allNotes.data, newNote ];
+    store.writeQuery({ query: GetNotesQuery, data });
+  }
 }
 </script>
 
 <style lang="css">
+
 .error {
   color: red;
 }

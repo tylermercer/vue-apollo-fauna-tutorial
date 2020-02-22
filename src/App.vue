@@ -1,13 +1,10 @@
 <template>
   <div class="app">
-    <h1>Notes</h1>
-    <NoteCreator/>
-    <div>
-      <button @click="incrementPageSize">Show More</button>
-      <span class="num-shown">Max number of notes shown: {{pageSize}}</span>
-      <button :disabled="pageSize <= 1" @click="decrementPageSize">Show Less</button>
+    <div class="header">
+      <h1>Notes</h1>
+      <NoteCreator/>
     </div>
-    <NotesList :pageSize="pageSize"/>
+    <NotesList/>
   </div>
 </template>
 
@@ -22,24 +19,23 @@ import NoteCreator from './components/NoteCreator.vue'
   }
 })
 export default class App extends Vue {
-  pageSize = 1
 
-  incrementPageSize() {
-    this.pageSize += 1
-  }
-
-  decrementPageSize() {
-    if (this.pageSize > 1) this.pageSize -= 1
-  }
 }
 </script>
 
 <style lang="css">
-.num-shown {
-  padding: 0 10px;
+.header {
+  position: sticky;
+  top: 0;
+  background: white;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.3);
+  padding: 6px;
 }
 .app {
   font-family: sans-serif;
   text-align: center;
+}
+body {
+  margin: 0
 }
 </style>

@@ -1,19 +1,22 @@
-function html(s: TemplateStringsArray){ return s.join()};
+import { DocumentNode } from 'graphql'
+import gql from 'graphql-tag'
 
-export const CreateNoteQuery: string = `
+export const CreateNoteQuery: DocumentNode = gql`
     mutation AddNote ($author: String!, $body: String!) {
-        createNote(data: {
+        createNote (data: {
             author: $author,
             body: $body
         }) {
             _id
+            author
+            body
         }
     }
 `
 
-export const GetNotesQuery: string = `
-    query MyQuery ($pageSize: Int) {
-        allNotes(_size: $pageSize) {
+export const GetNotesQuery: DocumentNode = gql`
+    query MyQuery {
+        allNotes {
             data {
             _id
             author
@@ -21,8 +24,4 @@ export const GetNotesQuery: string = `
             }
         }
     }
-`
-
-export const TestHTMLTemplate: string = html`
-    <div></div>
 `

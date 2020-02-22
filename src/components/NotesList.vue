@@ -1,5 +1,5 @@
 <template>
-  <ApolloQuery :query="gql => gql(query)" :variables="{ pageSize }">
+  <ApolloQuery :query="() => query">
     <template v-slot="{ result: { error, data }, isLoading }">
       <div v-if="isLoading">Loading...</div>
       <div v-else-if="error">An error occurred</div>
@@ -17,6 +17,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import ApolloQuery from 'vue-apollo'
 import Note from './Note.vue'
 import { GetNotesQuery } from '../queries'
+import { DocumentNode } from 'graphql';
 
 @Component({
   components: {
@@ -24,8 +25,6 @@ import { GetNotesQuery } from '../queries'
   }
 })
 export default class NotesList extends Vue {
-  @Prop(Number) private pageSize!: string;
-
-  query: string = GetNotesQuery
+  query: DocumentNode = GetNotesQuery
 }
 </script>
