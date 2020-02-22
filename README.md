@@ -435,7 +435,7 @@ export const GetNotesQuery: DocumentNode = gql`
 
 Here you can see the previously-mentioned `gql` function in action. (For more information on template string tag functions, check out [the MDN docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)).
 
-Because the queries are exported as DocumentNodes, we don't need to process them with the gql functions in the components they're used in. Thus, we can go to the NotesList component and replace `gql => gql(query)` with `_ => query`. Then add an import statement to import the `GetNotesQuery`, and store it in the component's `query` data member:
+Because the queries are exported as DocumentNodes, we don't need to process them with the gql functions in the components they're used in. Thus, we can go to the NotesList component and replace `gql => gql(query)` with `() => query`. Then add an import statement to import the `GetNotesQuery`, and store it in the component's `query` data member:
 
 ```
 import { GetNotesQuery } from '../queries'
@@ -587,3 +587,11 @@ export default class Note extends Vue {
 The styling we added puts the button in the top right corner of the note, and makes it only visible when the user hovers over the note.
 
 That's it! If you run the app, you should be able to delete notes!
+
+## Conclusion and Taking it Further
+
+I hope this tutorial has been helpful for explaining how Apollo, Fauna, and Vue can be used together. Many of the principles explained in this tutorial (like how Apollo's cache works) are independent from the framework used, and could just as easily be used in React, Angular, Svelte, or vanilla JavaScript.
+
+If you'd like to continue with your notes project and want an example of how to make the notes editable, check out the Note.vue code in this repository. Note that you'll have to adjust your custom DB role to include "write" permissions for the `notes` collection.
+
+Happy coding!
