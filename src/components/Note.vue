@@ -79,5 +79,7 @@ export default class Note extends Vue {
 .menu-button {
   border: unset;
   background: unset;
+  cursor: pointer;
+  color: rgba(0,0,0,0.3);
 }
 </style>
